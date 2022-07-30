@@ -64,6 +64,19 @@ const newEmployeeOptions = [
     }
 ];
 
+const updateEmployeeOptions = [
+    {
+        type: 'input',
+        name: 'employee',
+        message: "Enter employee id: "
+    },
+    {
+        type: 'input',
+        name: 'role',
+        message: "Enter role id: "
+    }
+];
+
 const db = mysql.createConnection(
     {
       host: 'localhost',
@@ -105,7 +118,7 @@ async function action(answers) {
             .prompt(newDeptOptions)
             .then(async (answers) => {
                 db.query(`INSERT INTO department (d_name) VALUES("${answers.name}")`, async function(err, results) {
-                    err ? console.log("Invalid entry") : await showDepartments();
+                    err ? console.log(err) : await showDepartments();
                 });
             })
             .catch((error) => {
@@ -116,7 +129,7 @@ async function action(answers) {
             .prompt(newRoleOptions)
             .then(async (answers) => {
                 db.query(`INSERT INTO role (title, salary, department_id) VALUES("${answers.title}", ${answers.salary}, ${answers.dept})`, async function(err, results) {
-                    err ? console.log("Invalid entry") : await showRoles();
+                    err ? console.log(err) : await showRoles();
                 });
             })
             .catch((error) => {
@@ -127,8 +140,19 @@ async function action(answers) {
             .prompt(newEmployeeOptions)
             .then(async (answers) => {
                 db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id)
-                            VALUES("${answers.first_name}", "${answers.last_name}", ${answers.role}, ${answers.manager})`, async function(err, results) {
-                    err ? console.log("Invalid entry\n" + err) : await showEmployees();
+                            VALUES("${answers.first_name}", "${answers.last_name}", ${answers.role}, ${answers.manager == "" ? "NULL" : answers.manager})`, async function(err, results) {
+                    err ? console.log(err) : await showEmployees();
+                });
+            })
+            .catch((error) => {
+                console.log(error);
+        });
+    } else if(answers.choice == "update an employee role") {
+        await inquirer
+            .prompt(updateEmployeeOptions)
+            .then(async (answers) => {
+                db.query(`UPDATE employee SET role_id = ${answers.role} WHERE id = ${answers.employee}`, async function(err, results) {
+                    err ? console.log(err.sqlMessage) : await showEmployees();
                 });
             })
             .catch((error) => {
